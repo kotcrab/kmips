@@ -17,7 +17,8 @@ fun assembleAsHexString(startPc: Int = 0, endianness: Endianness = Endianness.Li
 }
 
 class Assembler(startPc: Int, val endianness: Endianness) {
-    private var virtualPc = startPc
+    var virtualPc = startPc
+        private set
     private val instructions = mutableListOf<Instruction>()
 
     fun add(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_000))
@@ -62,6 +63,57 @@ class Assembler(startPc: Int, val endianness: Endianness) {
     fun sw(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b101_011, rs, rt, offset))
     fun xor(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_110))
     fun xori(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_110, rs, rt, imm))
+
+    fun blt(rt: Reg, rs: Reg, label: Label) {
+        slt(Reg.at, rs, rt)
+        bne(Reg.at, Reg.zero, label)
+    }
+
+    fun bge(rt: Reg, rs: Reg, label: Label) {
+        slt(Reg.at, rs, rt)
+        beq(Reg.at, Reg.zero, label)
+    }
+
+    fun bgt(rt: Reg, rs: Reg, label: Label) {
+        slt(Reg.at, rt, rs)
+        bne(Reg.at, Reg.zero, label)
+    }
+
+    fun ble(rt: Reg, rs: Reg, label: Label) {
+        slt(Reg.at, rt, rs)
+        beq(Reg.at, Reg.zero, label)
+    }
+
+    fun neg(rd: Reg, rt: Reg) = sub(rd, Reg.zero, rt)
+
+    fun not(rd: Reg, rs: Reg) = nor(rd, rs, Reg.zero)
+
+    fun la(rs: Reg, imm: Int) {
+        lui(rs, imm ushr 16)
+        ori(rs, rs, imm and 0xFFFF)
+    }
+
+    fun li(rs: Reg, imm: Int) {
+        if (Integer.compareUnsigned(imm, 0xFFFF) > 0) {
+            la(rs, imm)
+        } else {
+            addi(rs, Reg.zero, imm)
+        }
+    }
+
+    fun move(rd: Reg, rs: Reg) {
+        addu(rd, rs, Reg.zero)
+    }
+
+    fun sge(rd: Reg, rs: Reg, rt: Reg) {
+        slt(rd, rs, rt)
+        li(Reg.at, 1)
+        subu(rd, Reg.at, rd)
+    }
+
+    fun sgt(rd: Reg, rs: Reg, rt: Reg) {
+        slt(rd, rt, rs)
+    }
 
     fun label(label: Label) {
         label.address = virtualPc
@@ -132,7 +184,7 @@ class IInstruction(val opcode: Int, val rs: Reg, val rt: Reg, val imm: () -> Int
 
     override fun assemble(): Int {
         if (opcode > 0x3F) error("opcode value is too big: $opcode")
-        if (imm() > 0xFFFF) error("imm value is too big: ${imm()}")
+        if (Integer.compareUnsigned(imm(), 0xFFFF) > 0) error("imm value is too big: ${imm()}")
         return (opcode shl 26) or (rs.id shl 21) or (rt.id shl 16) or imm()
     }
 }
@@ -142,7 +194,7 @@ class JInstruction(val opcode: Int, val address: () -> Int) : Instruction {
 
     override fun assemble(): Int {
         if (opcode > 0x3F) error("opcode value is too big: $opcode")
-        if (address() > 0x3FFFFFF) error("address value is too big: 0x${address().toHex()}")
+        if (Integer.compareUnsigned(address(), 0x3FFFFFF) > 0) error("address value is too big: 0x${address().toHex()}")
         return (opcode shl 26) or address()
     }
 }

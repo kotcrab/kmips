@@ -53,6 +53,19 @@ class AssemblerTest {
     @Test fun testXor() = testInstruction("00888026", { xor(s0, a0, t0) })
     @Test fun testXori() = testInstruction("389000CD", { xori(s0, a0, 0xCD) })
 
+    @Test fun testBlt() = testBranchInstruction("0204082A14200001", { blt(a0, s0, it) })
+    @Test fun testBge() = testBranchInstruction("0204082A10200001", { bge(a0, s0, it) })
+    @Test fun testBgt() = testBranchInstruction("0090082A14200001", { bgt(a0, s0, it) })
+    @Test fun testBle() = testBranchInstruction("0090082A10200001", { ble(a0, s0, it) })
+    @Test fun testNeg() = testInstruction("00048022", { neg(s0, a0) })
+    @Test fun testNot() = testInstruction("00808027", { not(s0, a0) })
+    @Test fun testLa() = testInstruction("3C10ABAB3610CDCD", { la(s0, 0xABABCDCD.toInt()) })
+    @Test fun testLiBig() = testInstruction("3C10ABAB3610CDCD", { li(s0, 0xABABCDCD.toInt()) })
+    @Test fun testLiSmall() = testInstruction("201000CD", { li(s0, 0xCD) })
+    @Test fun testMove() = testInstruction("00808021", { move(s0, a0) })
+    @Test fun testSgt() = testInstruction("0104802A", { sgt(s0, a0, t0) })
+    @Test fun testSge() = testInstruction("0088802A2001000100308023", { sge(s0, a0, t0) })
+
     @Test(expected = IllegalStateException::class)
     fun testJIllegalLsbBits() = testInstruction("0A3F48E8", { j(0x08FD23A1) }, 0x0896D6E4)
 
