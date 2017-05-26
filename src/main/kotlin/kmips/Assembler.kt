@@ -74,10 +74,10 @@ class Assembler(startPc: Int, val endianness: Endianness) {
     private fun emitJumpInstruction(opcode: Int, address: Int) {
         val instrVirtualPc = virtualPc + 0x4
         if (address and 0xf0000000.toInt() != instrVirtualPc and 0xf0000000.toInt()) {
-            error("can't assemble jump because address is too far from current pc (pc bits 31-28 mismatch)")
+            error("can't calculate jump address because address is too far from current pc (pc bits 31-28 mismatch)")
         }
         if (address and 0b11 != 0) {
-            error("can't assemble jump last two bits of address are != 0")
+            error("can't calculate jump address because last two bits of address are != 0")
         }
         emit(JInstruction(opcode, address and 0xFFFFFFF ushr 2))
     }
