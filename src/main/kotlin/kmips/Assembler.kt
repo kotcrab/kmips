@@ -44,6 +44,7 @@ class Assembler(startPc: Int, val endianness: Endianness) {
     fun mult(rs: Reg, rt: Reg) = emit(RInstruction(0, Reg.zero, rs, rt, 0, 0b011_000))
     fun multu(rs: Reg, rt: Reg) = emit(RInstruction(0, Reg.zero, rs, rt, 0, 0b011_001))
     fun nop() = emit(NopInstruction())
+    fun nor(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_111))
     fun or(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_101))
     fun ori(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_101, rs, rt, imm))
     fun sb(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b101_000, rs, rt, offset))

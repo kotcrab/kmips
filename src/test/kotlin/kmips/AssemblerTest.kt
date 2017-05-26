@@ -34,6 +34,7 @@ class AssemblerTest {
     @Test fun testMult() = testInstruction("02040018", { mult(s0, a0) })
     @Test fun testMultu() = testInstruction("02040019", { multu(s0, a0) })
     @Test fun testNop() = testInstruction("00000000", { nop() })
+    @Test fun testNor() = testInstruction("00888027", { nor(s0, a0, t0) })
     @Test fun testOr() = testInstruction("00888025", { or(s0, a0, t0) })
     @Test fun testOri() = testInstruction("349000CD", { ori(s0, a0, 0xCD) })
     @Test fun testSb() = testInstruction("A09000CD", { sb(s0, 0xCD, a0) })
