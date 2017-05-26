@@ -16,7 +16,7 @@ fun assembleAsHexString(startPc: Int = 0, endianness: Endianness = Endianness.Li
     return assembler.assembleAsHexString()
 }
 
-class Assembler(startPc: Int, val endianness: Endianness) {
+class Assembler(val startPc: Int, val endianness: Endianness) {
     var virtualPc = startPc
         private set
     private val instructions = mutableListOf<Instruction>()
