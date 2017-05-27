@@ -7,7 +7,7 @@ import java.nio.ByteOrder
 fun assemble(startPc: Int = 0, endianness: Endianness = Endianness.Little, init: Assembler.() -> Unit): List<Int> {
     val assembler = Assembler(startPc, endianness)
     assembler.init()
-    return assembler.assembleToList()
+    return assembler.assembleAsList()
 }
 
 fun assembleAsHexString(startPc: Int = 0, endianness: Endianness = Endianness.Little, init: Assembler.() -> Unit): String {
@@ -140,17 +140,15 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
         virtualPc += 4
     }
 
-    fun assembleToList(): List<Int> {
-        val out: List<Int>
+    fun assembleAsList(): List<Int> {
         when (endianness) {
-            Endianness.Little -> out = instructions.map { it.assemble().toLittleEndian() }
-            Endianness.Big -> out = instructions.map { it.assemble() }
+            Endianness.Little -> return instructions.map { it.assemble().toLittleEndian() }
+            Endianness.Big -> return instructions.map { it.assemble() }
         }
-        return out
     }
 
     fun assembleAsHexString(): String {
-        return assembleToList().map { it.toHex() }.joinToString(separator = "")
+        return assembleAsList().map { it.toHex() }.joinToString(separator = "")
     }
 }
 
