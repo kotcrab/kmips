@@ -60,8 +60,7 @@ class AssemblerTest {
     @Test fun testNeg() = testInstruction("00048022", { neg(s0, a0) })
     @Test fun testNot() = testInstruction("00808027", { not(s0, a0) })
     @Test fun testLa() = testInstruction("3C10ABAB3610CDCD", { la(s0, 0xABABCDCD.toInt()) })
-    @Test fun testLiBig() = testInstruction("3C10ABAB3610CDCD", { li(s0, 0xABABCDCD.toInt()) })
-    @Test fun testLiSmall() = testInstruction("201000CD", { li(s0, 0xCD) })
+    @Test fun testLi() = testInstruction("201000CD", { li(s0, 0xCD) })
     @Test fun testMove() = testInstruction("00808021", { move(s0, a0) })
     @Test fun testSgt() = testInstruction("0104802A", { sgt(s0, a0, t0) })
     @Test fun testSge() = testInstruction("0088802A2001000100308023", { sge(s0, a0, t0) })
@@ -71,6 +70,8 @@ class AssemblerTest {
 
     @Test(expected = IllegalStateException::class)
     fun testJIllegalMsbBits() = testInstruction("0A3F48E8", { j(0xF8FD23A0.toInt()) }, 0x0896D6E4)
+
+    @Test fun testAddSigned() = testInstruction("23BDFFFC", { addi(sp, sp, -4) })
 
     private fun testInstruction(expected: String, instruction: Assembler.() -> Unit, startPc: Int = 0) {
         val assembler = Assembler(startPc, Endianness.Big)
@@ -219,13 +220,8 @@ class IInstructionTest {
     @Test()
     fun testImm() {
         (0 until 0xFFFF).forEach {
-            assertEquals(it, IInstruction(0, zero, zero, it).assemble() and 0xFFFF)
+            assertEquals(it, IInstruction(0, zero, zero, it.toShort()).assemble() and 0xFFFF)
         }
-    }
-
-    @Test(expected = IllegalStateException::class)
-    fun testIllegalImm() {
-        IInstruction(0, zero, zero, 0xFFFF + 1).assemble()
     }
 
     @Test
