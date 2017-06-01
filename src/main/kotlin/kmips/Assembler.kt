@@ -64,6 +64,10 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     fun xor(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_110))
     fun xori(rt: Reg, rs: Reg, imm: Short) = emit(IInstruction(0b001_110, rs, rt, imm))
 
+    fun b(label: Label) {
+         beq(Reg.zero, Reg.zero, label)
+    }
+
     fun blt(rt: Reg, rs: Reg, label: Label) {
         slt(Reg.at, rs, rt)
         bne(Reg.at, Reg.zero, label)

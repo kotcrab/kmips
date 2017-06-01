@@ -53,6 +53,7 @@ class AssemblerTest {
     @Test fun testXor() = testInstruction("00888026", { xor(s0, a0, t0) })
     @Test fun testXori() = testInstruction("389000CD", { xori(s0, a0, 0xCD) })
 
+    @Test fun testB() = testBranchInstruction("10000001", { b(it) })
     @Test fun testBlt() = testBranchInstruction("0204082A14200001", { blt(a0, s0, it) })
     @Test fun testBge() = testBranchInstruction("0204082A10200001", { bge(a0, s0, it) })
     @Test fun testBgt() = testBranchInstruction("0090082A14200001", { bgt(a0, s0, it) })
