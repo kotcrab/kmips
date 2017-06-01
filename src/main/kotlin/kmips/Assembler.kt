@@ -111,6 +111,8 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
         slt(rd, rt, rs)
     }
 
+    fun data(data: Int) = emit(DataPseudoInstruction(data))
+
     fun label(label: Label) {
         label.address = virtualPc
     }
@@ -194,6 +196,10 @@ class JInstruction(val opcode: Int, val address: () -> Int) : Instruction {
 
 class NopInstruction : Instruction {
     override fun assemble(): Int = 0
+}
+
+class DataPseudoInstruction(val data: Int) : Instruction {
+    override fun assemble(): Int = data
 }
 
 interface Instruction {

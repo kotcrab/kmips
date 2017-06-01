@@ -73,6 +73,8 @@ class AssemblerTest {
 
     @Test fun testAddSigned() = testInstruction("23BDFFFC", { addi(sp, sp, -4) })
 
+    @Test fun testData() = testInstruction("AABBCCDD", { data(0xAABBCCDD.toInt()) })
+
     private fun testInstruction(expected: String, instruction: Assembler.() -> Unit, startPc: Int = 0) {
         val assembler = Assembler(startPc, Endianness.Big)
         assembler.instruction()
