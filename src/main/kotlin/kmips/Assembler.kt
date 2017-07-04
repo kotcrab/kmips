@@ -36,7 +36,7 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     fun divu(rs: Reg, rt: Reg) = emit(RInstruction(0, Reg.zero, rs, rt, 0, 0b011_011))
     fun j(address: Int) = emitJumpInstruction(0b000_010, address)
     fun jal(address: Int) = emitJumpInstruction(0b000_011, address)
-    fun jr(rs: Reg) = emit(RInstruction(0b000_000, Reg.zero, rs, Reg.zero, 0, 0b001_000))
+    fun jr(rs: Reg) = emit(RInstruction(0, Reg.zero, rs, Reg.zero, 0, 0b001_000))
     fun lb(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b100_000, rs, rt, offset))
     fun lui(rt: Reg, imm: Short) = emit(IInstruction(0b001_111, Reg.zero, rt, imm))
     fun lw(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b100_011, rs, rt, offset))
