@@ -38,6 +38,9 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     fun jal(address: Int) = emitJumpInstruction(0b000_011, address)
     fun jr(rs: Reg) = emit(RInstruction(0, Reg.zero, rs, Reg.zero, 0, 0b001_000))
     fun lb(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b100_000, rs, rt, offset))
+    fun lbu(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b100_100, rs, rt, offset))
+    fun lh(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b100_001, rs, rt, offset))
+    fun lhu(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b100_101, rs, rt, offset))
     fun lui(rt: Reg, imm: Short) = emit(IInstruction(0b001_111, Reg.zero, rt, imm))
     fun lw(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b100_011, rs, rt, offset))
     fun mfhi(rd: Reg) = emit(RInstruction(0, rd, Reg.zero, Reg.zero, 0, 0b010_000))
@@ -49,6 +52,7 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     fun or(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_101))
     fun ori(rt: Reg, rs: Reg, imm: Short) = emit(IInstruction(0b001_101, rs, rt, imm))
     fun sb(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b101_000, rs, rt, offset))
+    fun sh(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b101_001, rs, rt, offset))
     fun sll(rd: Reg, rt: Reg, h: Int) = emit(RInstruction(0, rd, Reg.zero, rt, h, 0))
     fun sllv(rd: Reg, rt: Reg, rs: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b000_100))
     fun slt(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b101_010))
@@ -65,7 +69,7 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     fun xori(rt: Reg, rs: Reg, imm: Short) = emit(IInstruction(0b001_110, rs, rt, imm))
 
     fun b(label: Label) {
-         beq(Reg.zero, Reg.zero, label)
+        beq(Reg.zero, Reg.zero, label)
     }
 
     fun blt(rt: Reg, rs: Reg, label: Label) {
