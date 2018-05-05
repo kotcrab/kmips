@@ -1,7 +1,6 @@
 package kmips
 
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
+import java.io.ByteArrayOutputStream
 
 /** @author Kotcrab */
 fun assemble(startPc: Int = 0, endianness: Endianness = Endianness.Little, init: Assembler.() -> Unit): List<Int> {
@@ -16,17 +15,23 @@ fun assembleAsHexString(startPc: Int = 0, endianness: Endianness = Endianness.Li
     return assembler.assembleAsHexString()
 }
 
+fun assembleAsByteArray(startPc: Int = 0, endianness: Endianness = Endianness.Little, init: Assembler.() -> Unit): ByteArray {
+    val assembler = Assembler(startPc, endianness)
+    assembler.init()
+    return assembler.assembleAsByteArray()
+}
+
 class Assembler(val startPc: Int, val endianness: Endianness) {
     var virtualPc = startPc
         private set
     private val instructions = mutableListOf<Instruction>()
 
     fun add(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_000))
-    fun addi(rt: Reg, rs: Reg, imm: Short) = emit(IInstruction(0b001_000, rs, rt, imm))
-    fun addiu(rt: Reg, rs: Reg, imm: Short) = emit(IInstruction(0b001_001, rs, rt, imm))
+    fun addi(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_000, rs, rt, imm))
+    fun addiu(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_001, rs, rt, imm))
     fun addu(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_001))
     fun and(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_100))
-    fun andi(rt: Reg, rs: Reg, imm: Short) = emit(IInstruction(0b001_100, rs, rt, imm))
+    fun andi(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_100, rs, rt, imm))
     fun beq(rs: Reg, rt: Reg, label: Label) = emitBranchInstruction(0b000_100, rs, rt, label)
     fun bgez(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs, Reg.at, label)
     fun blez(rs: Reg, label: Label) = emitBranchInstruction(0b000_110, rs, Reg.zero, label)
@@ -37,12 +42,12 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     fun j(address: Int) = emitJumpInstruction(0b000_010, address)
     fun jal(address: Int) = emitJumpInstruction(0b000_011, address)
     fun jr(rs: Reg) = emit(RInstruction(0, Reg.zero, rs, Reg.zero, 0, 0b001_000))
-    fun lb(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b100_000, rs, rt, offset))
-    fun lbu(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b100_100, rs, rt, offset))
-    fun lh(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b100_001, rs, rt, offset))
-    fun lhu(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b100_101, rs, rt, offset))
-    fun lui(rt: Reg, imm: Short) = emit(IInstruction(0b001_111, Reg.zero, rt, imm))
-    fun lw(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b100_011, rs, rt, offset))
+    fun lb(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b100_000, rs, rt, offset))
+    fun lbu(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b100_100, rs, rt, offset))
+    fun lh(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b100_001, rs, rt, offset))
+    fun lhu(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b100_101, rs, rt, offset))
+    fun lui(rt: Reg, imm: Int) = emit(IInstruction(0b001_111, Reg.zero, rt, imm))
+    fun lw(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b100_011, rs, rt, offset))
     fun mfhi(rd: Reg) = emit(RInstruction(0, rd, Reg.zero, Reg.zero, 0, 0b010_000))
     fun mflo(rd: Reg) = emit(RInstruction(0, rd, Reg.zero, Reg.zero, 0, 0b010_010))
     fun mult(rs: Reg, rt: Reg) = emit(RInstruction(0, Reg.zero, rs, rt, 0, 0b011_000))
@@ -50,23 +55,23 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     fun nop() = emit(NopInstruction())
     fun nor(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_111))
     fun or(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_101))
-    fun ori(rt: Reg, rs: Reg, imm: Short) = emit(IInstruction(0b001_101, rs, rt, imm))
-    fun sb(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b101_000, rs, rt, offset))
-    fun sh(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b101_001, rs, rt, offset))
+    fun ori(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_101, rs, rt, imm))
+    fun sb(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b101_000, rs, rt, offset))
+    fun sh(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b101_001, rs, rt, offset))
     fun sll(rd: Reg, rt: Reg, h: Int) = emit(RInstruction(0, rd, Reg.zero, rt, h, 0))
     fun sllv(rd: Reg, rt: Reg, rs: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b000_100))
     fun slt(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b101_010))
-    fun slti(rt: Reg, rs: Reg, imm: Short) = emit(IInstruction(0b001_010, rs, rt, imm))
-    fun sltiu(rt: Reg, rs: Reg, imm: Short) = emit(IInstruction(0b001_011, rs, rt, imm))
+    fun slti(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_010, rs, rt, imm))
+    fun sltiu(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_011, rs, rt, imm))
     fun sltu(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b101_011))
     fun sra(rd: Reg, rt: Reg, h: Int) = emit(RInstruction(0, rd, Reg.zero, rt, h, 0b000_011))
     fun srl(rd: Reg, rt: Reg, h: Int) = emit(RInstruction(0, rd, Reg.zero, rt, h, 0b000_010))
     fun srlv(rd: Reg, rt: Reg, rs: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b000_110))
     fun sub(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_010))
     fun subu(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_011))
-    fun sw(rt: Reg, offset: Short, rs: Reg) = emit(IInstruction(0b101_011, rs, rt, offset))
+    fun sw(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b101_011, rs, rt, offset))
     fun xor(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_110))
-    fun xori(rt: Reg, rs: Reg, imm: Short) = emit(IInstruction(0b001_110, rs, rt, imm))
+    fun xori(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_110, rs, rt, imm))
 
     fun b(label: Label) {
         beq(Reg.zero, Reg.zero, label)
@@ -97,12 +102,16 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     fun not(rd: Reg, rs: Reg) = nor(rd, rs, Reg.zero)
 
     fun la(rs: Reg, imm: Int) {
-        lui(rs, (imm ushr 16).toShort())
-        ori(rs, rs, (imm and 0xFFFF).toShort())
+        lui(rs, imm ushr 16)
+        ori(rs, rs, imm and 0xFFFF)
     }
 
-    fun li(rs: Reg, imm: Short) {
-        addi(rs, Reg.zero, imm)
+    fun li(rs: Reg, imm: Int) {
+        if (imm < 0) {
+            addiu(rs, Reg.zero, imm)
+        } else {
+            ori(rs, Reg.zero, imm)
+        }
     }
 
     fun move(rd: Reg, rs: Reg) {
@@ -127,7 +136,7 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
 
     private fun emitBranchInstruction(opcode: Int, rs: Reg, rt: Reg, label: Label) {
         val instrVirtualPc = virtualPc
-        emit(IInstruction(opcode, rs, rt, { ((label.address - instrVirtualPc - 0x4) / 0x4).toShort() }))
+        emit(IInstruction(opcode, rs, rt, { (label.address - instrVirtualPc - 0x4) / 0x4 }))
     }
 
     private fun emitJumpInstruction(opcode: Int, address: Int) {
@@ -147,29 +156,38 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     }
 
     fun assembleAsList(): List<Int> {
-        when (endianness) {
-            Endianness.Little -> return instructions.map { it.assemble().toLittleEndian() }
-            Endianness.Big -> return instructions.map { it.assemble() }
+        return when (endianness) {
+            Endianness.Little -> instructions.map { it.assemble().toLittleEndian() }
+            Endianness.Big -> instructions.map { it.assemble() }
         }
     }
 
     fun assembleAsHexString(): String {
         return assembleAsList().map { it.toHex() }.joinToString(separator = "")
     }
+
+    fun assembleAsByteArray(): ByteArray {
+        val instr = assembleAsList()
+        val out = ByteArrayOutputStream(instr.size * 4)
+        instr.forEach {
+            out.write(it ushr 24)
+            out.write(it ushr 16 and 0xFF)
+            out.write(it ushr 8 and 0xFF)
+            out.write(it and 0xFF)
+        }
+        return out.toByteArray()
+    }
 }
 
 class Label {
-    internal var assigned = false
-
     var address: Int = -1
         get() {
-            if (!assigned) error("label was not assigned")
+            if (field == -1) error("label was not assigned")
             return field
         }
         set(value) {
             if (value < 0) error("value can't be < 0")
-            if (assigned) error("label was already assigned")
-            assigned = true
+            if (field != -1) error("label was already assigned")
             field = value
         }
 }
@@ -183,12 +201,12 @@ class RInstruction(val opcode: Int, val rd: Reg, val rs: Reg, val rt: Reg, val s
     }
 }
 
-class IInstruction(val opcode: Int, val rs: Reg, val rt: Reg, val imm: () -> Short) : Instruction {
-    constructor(opcode: Int, rs: Reg, rt: Reg, imm: Short) : this(opcode, rs, rt, { imm })
+class IInstruction(val opcode: Int, val rs: Reg, val rt: Reg, val imm: () -> Int) : Instruction {
+    constructor(opcode: Int, rs: Reg, rt: Reg, imm: Int) : this(opcode, rs, rt, { imm })
 
     override fun assemble(): Int {
         if (opcode > 0x3F) error("opcode value is too big: $opcode")
-        return (opcode shl 26) or (rs.id shl 21) or (rt.id shl 16) or (imm().toInt() and 0xFFFF)
+        return (opcode shl 26) or (rs.id shl 21) or (rt.id shl 16) or (imm().toShort().toInt() and 0xFFFF)
     }
 }
 
@@ -232,7 +250,8 @@ enum class Reg(val id: Int) {
 internal fun Int.toHex() = String.format("%08X", this)
 
 internal fun Int.toLittleEndian(): Int {
-    val buffer = ByteBuffer.allocate(4).putInt(this)
-    buffer.rewind()
-    return buffer.order(ByteOrder.LITTLE_ENDIAN).int
+    return (this and 0xFF shl 24) or
+            (this and 0xFF00 shl 8) or
+            (this and 0xFF0000 ushr 8) or
+            (this and 0xFF000000.toInt() ushr 24)
 }

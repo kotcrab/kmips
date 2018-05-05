@@ -1,10 +1,8 @@
 package kmips
 
 import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertTrue
 import kmips.Reg.*
 import org.junit.Assert
-import org.junit.Assert.assertFalse
 import org.junit.Test
 
 
@@ -65,10 +63,12 @@ class AssemblerTest {
     @Test fun testNeg() = testInstruction("00048022", { neg(s0, a0) })
     @Test fun testNot() = testInstruction("00808027", { not(s0, a0) })
     @Test fun testLa() = testInstruction("3C10ABAB3610CDCD", { la(s0, 0xABABCDCD.toInt()) })
-    @Test fun testLi() = testInstruction("201000CD", { li(s0, 0xCD) })
+    @Test fun testLiAsOr() = testInstruction("341000CD", { li(s0, 0xCD) })
+    @Test fun testLiAsOr2() = testInstruction("3410FFF0", { li(s0, 0xFFF0) })
+    @Test fun testLiAsAddiu() = testInstruction("2410FFF0", { li(s0, -16) })
     @Test fun testMove() = testInstruction("00808021", { move(s0, a0) })
     @Test fun testSgt() = testInstruction("0104802A", { sgt(s0, a0, t0) })
-    @Test fun testSge() = testInstruction("0088802A2001000100308023", { sge(s0, a0, t0) })
+    @Test fun testSge() = testInstruction("0088802A3401000100308023", { sge(s0, a0, t0) })
 
     @Test(expected = IllegalStateException::class)
     fun testJIllegalLsbBits() = testInstruction("0A3F48E8", { j(0x08FD23A1) }, 0x0896D6E4)
@@ -110,18 +110,26 @@ class AssemblerTest {
 
     @Test
     fun testAssembleHelper() {
-        val result = assemble {
-            nop()
+        val result = assemble(endianness = Endianness.Big) {
+            sw(s0, 0xCD, a0)
         }
-        Assert.assertArrayEquals(arrayOf(0), result.toTypedArray())
+        Assert.assertArrayEquals(arrayOf(0xAC9000CD.toInt()), result.toTypedArray())
     }
 
     @Test
     fun testAssembleAsHexStringHelper() {
-        val result = assembleAsHexString {
-            nop()
+        val result = assembleAsHexString(endianness = Endianness.Big) {
+            sw(s0, 0xCD, a0)
         }
-        Assert.assertEquals("00000000", result)
+        Assert.assertEquals("AC9000CD", result)
+    }
+
+    @Test
+    fun testAssembleAsByteArrayHelper() {
+        val result = assembleAsByteArray(endianness = Endianness.Big) {
+            sw(s0, 0xCD, a0)
+        }
+        Assert.assertArrayEquals(arrayOf(0xAC, 0x90, 0x00, 0xCD).map { it.toByte() }.toByteArray(), result)
     }
 }
 
@@ -136,19 +144,6 @@ class LabelTest {
         val label = Label()
         label.address = 0
         label.address = 0
-    }
-
-    @Test
-    fun testAssignedSet() {
-        val label = Label()
-        label.address = 0
-        assertTrue(label.assigned)
-    }
-
-    @Test
-    fun testAssignedNotSet() {
-        val label = Label()
-        assertFalse(label.assigned)
     }
 }
 
@@ -227,7 +222,7 @@ class IInstructionTest {
     @Test()
     fun testImm() {
         (0 until 0xFFFF).forEach {
-            assertEquals(it, IInstruction(0, zero, zero, it.toShort()).assemble() and 0xFFFF)
+            assertEquals(it, IInstruction(0, zero, zero, it).assemble() and 0xFFFF)
         }
     }
 
