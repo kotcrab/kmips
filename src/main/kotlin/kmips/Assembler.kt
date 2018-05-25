@@ -26,52 +26,197 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
         private set
     private val instructions = mutableListOf<Instruction>()
 
-    fun add(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_000))
+    // MIPS I
+
+    fun lb(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b100_000, base, rt, offset))
+    fun lbu(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b100_100, base, rt, offset))
+    fun sb(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b101_000, base, rt, offset))
+
+    fun lh(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b100_001, base, rt, offset))
+    fun lhu(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b100_101, base, rt, offset))
+    fun sh(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b101_001, base, rt, offset))
+
+    fun lw(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b100_011, base, rt, offset))
+    fun sw(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b101_011, base, rt, offset))
+
+    fun lwl(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b100_010, base, rt, offset))
+    fun lwr(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b100_110, base, rt, offset))
+    fun swl(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b101_010, base, rt, offset))
+    fun swr(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b101_110, base, rt, offset))
+
     fun addi(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_000, rs, rt, imm))
     fun addiu(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_001, rs, rt, imm))
-    fun addu(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_001))
-    fun and(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_100))
-    fun andi(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_100, rs, rt, imm))
-    fun beq(rs: Reg, rt: Reg, label: Label) = emitBranchInstruction(0b000_100, rs, rt, label)
-    fun bgez(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs, Reg.at, label)
-    fun blez(rs: Reg, label: Label) = emitBranchInstruction(0b000_110, rs, Reg.zero, label)
-    fun bltz(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs, Reg.zero, label)
-    fun bne(rs: Reg, rt: Reg, label: Label) = emitBranchInstruction(0b000_101, rs, rt, label)
-    fun div(rs: Reg, rt: Reg) = emit(RInstruction(0, Reg.zero, rs, rt, 0, 0b011_010))
-    fun divu(rs: Reg, rt: Reg) = emit(RInstruction(0, Reg.zero, rs, rt, 0, 0b011_011))
-    fun j(address: Int) = emitJumpInstruction(0b000_010, address)
-    fun jal(address: Int) = emitJumpInstruction(0b000_011, address)
-    fun jr(rs: Reg) = emit(RInstruction(0, Reg.zero, rs, Reg.zero, 0, 0b001_000))
-    fun lb(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b100_000, rs, rt, offset))
-    fun lbu(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b100_100, rs, rt, offset))
-    fun lh(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b100_001, rs, rt, offset))
-    fun lhu(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b100_101, rs, rt, offset))
-    fun lui(rt: Reg, imm: Int) = emit(IInstruction(0b001_111, Reg.zero, rt, imm))
-    fun lw(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b100_011, rs, rt, offset))
-    fun mfhi(rd: Reg) = emit(RInstruction(0, rd, Reg.zero, Reg.zero, 0, 0b010_000))
-    fun mflo(rd: Reg) = emit(RInstruction(0, rd, Reg.zero, Reg.zero, 0, 0b010_010))
-    fun mult(rs: Reg, rt: Reg) = emit(RInstruction(0, Reg.zero, rs, rt, 0, 0b011_000))
-    fun multu(rs: Reg, rt: Reg) = emit(RInstruction(0, Reg.zero, rs, rt, 0, 0b011_001))
-    fun nop() = emit(NopInstruction())
-    fun nor(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_111))
-    fun or(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_101))
-    fun ori(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_101, rs, rt, imm))
-    fun sb(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b101_000, rs, rt, offset))
-    fun sh(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b101_001, rs, rt, offset))
-    fun sll(rd: Reg, rt: Reg, h: Int) = emit(RInstruction(0, rd, Reg.zero, rt, h, 0))
-    fun sllv(rd: Reg, rt: Reg, rs: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b000_100))
-    fun slt(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b101_010))
     fun slti(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_010, rs, rt, imm))
     fun sltiu(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_011, rs, rt, imm))
-    fun sltu(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b101_011))
-    fun sra(rd: Reg, rt: Reg, h: Int) = emit(RInstruction(0, rd, Reg.zero, rt, h, 0b000_011))
-    fun srl(rd: Reg, rt: Reg, h: Int) = emit(RInstruction(0, rd, Reg.zero, rt, h, 0b000_010))
-    fun srlv(rd: Reg, rt: Reg, rs: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b000_110))
-    fun sub(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_010))
-    fun subu(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_011))
-    fun sw(rt: Reg, offset: Int, rs: Reg) = emit(IInstruction(0b101_011, rs, rt, offset))
-    fun xor(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rd, rs, rt, 0, 0b100_110))
+    fun andi(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_100, rs, rt, imm))
+    fun ori(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_101, rs, rt, imm))
     fun xori(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_110, rs, rt, imm))
+    fun lui(rt: Reg, imm: Int) = emit(IInstruction(0b001_111, Reg.zero, rt, imm))
+
+    fun add(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rs, rt, rd, 0, 0b100_000))
+    fun addu(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rs, rt, rd, 0, 0b100_001))
+    fun sub(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rs, rt, rd, 0, 0b100_010))
+    fun subu(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rs, rt, rd, 0, 0b100_011))
+
+    fun slt(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rs, rt, rd, 0, 0b101_010))
+    fun sltu(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rs, rt, rd, 0, 0b101_011))
+    fun and(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rs, rt, rd, 0, 0b100_100))
+    fun or(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rs, rt, rd, 0, 0b100_101))
+    fun xor(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rs, rt, rd, 0, 0b100_110))
+    fun nor(rd: Reg, rs: Reg, rt: Reg) = emit(RInstruction(0, rs, rt, rd, 0, 0b100_111))
+
+    fun sll(rd: Reg, rt: Reg, sa: Int) = emit(RInstruction(0, Reg.zero, rt, rd, sa, 0))
+    fun srl(rd: Reg, rt: Reg, sa: Int) = emit(RInstruction(0, Reg.zero, rt, rd, sa, 0b000_010))
+    fun sra(rd: Reg, rt: Reg, sa: Int) = emit(RInstruction(0, Reg.zero, rt, rd, sa, 0b000_011))
+    fun sllv(rd: Reg, rt: Reg, rs: Reg) = emit(RInstruction(0, rs, rt, rd, 0, 0b000_100))
+    fun srlv(rd: Reg, rt: Reg, rs: Reg) = emit(RInstruction(0, rs, rt, rd, 0, 0b000_110))
+    fun srav(rd: Reg, rt: Reg, rs: Reg) = emit(RInstruction(0, rs, rt, rd, 0, 0b000_111))
+
+    fun mult(rs: Reg, rt: Reg) = emit(RInstruction(0, rs, rt, Reg.zero, 0, 0b011_000))
+    fun multu(rs: Reg, rt: Reg) = emit(RInstruction(0, rs, rt, Reg.zero, 0, 0b011_001))
+    fun div(rs: Reg, rt: Reg) = emit(RInstruction(0, rs, rt, Reg.zero, 0, 0b011_010))
+    fun divu(rs: Reg, rt: Reg) = emit(RInstruction(0, rs, rt, Reg.zero, 0, 0b011_011))
+    fun mfhi(rd: Reg) = emit(RInstruction(0, Reg.zero, Reg.zero, rd, 0, 0b010_000))
+    fun mthi(rs: Reg) = emit(RInstruction(0, rs, Reg.zero, Reg.zero, 0, 0b010_001))
+    fun mflo(rd: Reg) = emit(RInstruction(0, Reg.zero, Reg.zero, rd, 0, 0b010_010))
+    fun mtlo(rs: Reg) = emit(RInstruction(0, rs, Reg.zero, Reg.zero, 0, 0b010_011))
+
+    fun j(address: Int) = emitJumpInstruction(0b000_010, address)
+    fun jal(address: Int) = emitJumpInstruction(0b000_011, address)
+    fun jr(rs: Reg) = emit(RInstruction(0, rs, Reg.zero, Reg.zero, 0, 0b001_000))
+    fun jalr(rs: Reg) = jalr(Reg.ra, rs)
+    fun jalr(rd: Reg, rs: Reg) = emit(RInstruction(0, rs, Reg.zero, rd, 0, 0b001_001))
+
+    fun beq(rs: Reg, rt: Reg, label: Label) = emitBranchInstruction(0b000_100, rs, rt, label)
+    fun bne(rs: Reg, rt: Reg, label: Label) = emitBranchInstruction(0b000_101, rs, rt, label)
+    fun blez(rs: Reg, label: Label) = emitBranchInstruction(0b000_110, rs, Reg.zero, label)
+    fun bgtz(rs: Reg, label: Label) = emitBranchInstruction(0b000_111, rs, Reg.zero, label)
+
+    fun bltz(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs, Reg.zero, label)
+    fun bgez(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs, Reg.at, label)
+    fun bltzal(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs, Reg.s0, label)
+    fun bgezal(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs, Reg.s1, label)
+
+    fun syscall(code: Int) = emit(CodeInstruction(0, code, 0b001_100))
+    fun `break`(code: Int) = emit(CodeInstruction(0, code, 0b001_101))
+
+    fun nop() = emit(NopInstruction())
+
+    // FPU
+
+    /** FPU (coprocessor 1) */
+    private val COP1 = 0b010_001
+    /** 32 bit float */
+    private val FMT_S = 16
+    /** 64 bit float */
+    private val FMT_D = 17
+    /** 32 bit signed magnitude int */
+    private val FMT_W = 20
+    /** 64 bit signed magnitude int */
+    private val FMT_L = 21
+
+    fun lwc1(ft: FpuReg, offset: Int, base: Reg) = emit(IInstruction(0b110_001, base.id, ft.id, offset))
+    fun swc1(ft: FpuReg, offset: Int, base: Reg) = emit(IInstruction(0b111_001, base.id, ft.id, offset))
+
+    fun mtc1(rt: Reg, fs: FpuReg) = emit(RInstruction(COP1, 0b00100, rt.id, fs.id, 0, 0))
+    fun mfc1(rt: Reg, fs: FpuReg) = emit(RInstruction(COP1, 0b00000, rt.id, fs.id, 0, 0))
+    fun ctc1(rt: Reg, fs: FpuReg) = emit(RInstruction(COP1, 0b00110, rt.id, fs.id, 0, 0))
+    fun cfc1(rt: Reg, fs: FpuReg) = emit(RInstruction(COP1, 0b00010, rt.id, fs.id, 0, 0))
+
+    val add = AddFpu()
+    val sub = SubFpu()
+    val mul = MulFpu()
+    val div = DivFpu()
+    val abs = AbsFpu()
+    val neg = NegFpu()
+
+    inner class AddFpu {
+        fun s(fd: FpuReg, fs: FpuReg, ft: FpuReg) = emit(FpuInstruction(COP1, FMT_S, ft, fs, fd, 0b000_000))
+        fun d(fd: FpuReg, fs: FpuReg, ft: FpuReg) = emit(FpuInstruction(COP1, FMT_D, ft, fs, fd, 0b000_000))
+    }
+
+    inner class SubFpu {
+        fun s(fd: FpuReg, fs: FpuReg, ft: FpuReg) = emit(FpuInstruction(COP1, FMT_S, ft, fs, fd, 0b000_001))
+        fun d(fd: FpuReg, fs: FpuReg, ft: FpuReg) = emit(FpuInstruction(COP1, FMT_D, ft, fs, fd, 0b000_001))
+    }
+
+    inner class MulFpu {
+        fun s(fd: FpuReg, fs: FpuReg, ft: FpuReg) = emit(FpuInstruction(COP1, FMT_S, ft, fs, fd, 0b000_010))
+        fun d(fd: FpuReg, fs: FpuReg, ft: FpuReg) = emit(FpuInstruction(COP1, FMT_D, ft, fs, fd, 0b000_010))
+    }
+
+    inner class DivFpu {
+        fun s(fd: FpuReg, fs: FpuReg, ft: FpuReg) = emit(FpuInstruction(COP1, FMT_S, ft, fs, fd, 0b000_011))
+        fun d(fd: FpuReg, fs: FpuReg, ft: FpuReg) = emit(FpuInstruction(COP1, FMT_D, ft, fs, fd, 0b000_011))
+    }
+
+    inner class AbsFpu {
+        fun s(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_S, FpuReg.f0, fs, fd, 0b000_101))
+        fun d(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_D, FpuReg.f0, fs, fd, 0b000_101))
+    }
+
+    inner class NegFpu {
+        fun s(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_S, FpuReg.f0, fs, fd, 0b000_111))
+        fun d(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_D, FpuReg.f0, fs, fd, 0b000_111))
+    }
+
+    val c = CompareFpu()
+
+    inner class CompareFpu {
+        val eq = CondEq()
+        val le = CondLe()
+        val lt = CondLt()
+
+        inner class CondEq {
+            fun s(fs: FpuReg, ft: FpuReg) = emit(FpuInstruction(COP1, FMT_S, ft, fs, FpuReg.f0, 0b11_0010))
+            fun d(fs: FpuReg, ft: FpuReg) = emit(FpuInstruction(COP1, FMT_D, ft, fs, FpuReg.f0, 0b11_0010))
+        }
+
+        inner class CondLe {
+            fun s(fs: FpuReg, ft: FpuReg) = emit(FpuInstruction(COP1, FMT_S, ft, fs, FpuReg.f0, 0b11_1110))
+            fun d(fs: FpuReg, ft: FpuReg) = emit(FpuInstruction(COP1, FMT_D, ft, fs, FpuReg.f0, 0b11_1110))
+        }
+
+        inner class CondLt {
+            fun s(fs: FpuReg, ft: FpuReg) = emit(FpuInstruction(COP1, FMT_S, ft, fs, FpuReg.f0, 0b11_1100))
+            fun d(fs: FpuReg, ft: FpuReg) = emit(FpuInstruction(COP1, FMT_D, ft, fs, FpuReg.f0, 0b11_1100))
+        }
+    }
+
+    val cvt = CvtFpu()
+
+    inner class CvtFpu {
+        val s = CvtS()
+        val d = CvtD()
+        val w = CvtW()
+
+        inner class CvtS {
+            fun d(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_D, FpuReg.f0, fs, fd, 0b100_000))
+            fun w(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_W, FpuReg.f0, fs, fd, 0b100_000))
+        }
+
+        inner class CvtD {
+            fun s(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_S, FpuReg.f0, fs, fd, 0b100_001))
+            fun w(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_W, FpuReg.f0, fs, fd, 0b100_001))
+        }
+
+        inner class CvtW {
+            fun s(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_S, FpuReg.f0, fs, fd, 0b100_100))
+            fun d(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_D, FpuReg.f0, fs, fd, 0b100_100))
+        }
+    }
+
+    val mov = MovFpu()
+
+    inner class MovFpu {
+        fun s(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_S, FpuReg.f0, fs, fd, 0b000_110))
+        fun d(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_D, FpuReg.f0, fs, fd, 0b000_110))
+    }
+
+    fun bc1f(label: Label) = emitBranchInstruction(COP1, 0b01000, 0, label)
+    fun bc1t(label: Label) = emitBranchInstruction(COP1, 0b01000, 1, label)
+
+    // Pseudo instructions / aliases
 
     fun b(label: Label) {
         beq(Reg.zero, Reg.zero, label)
@@ -135,6 +280,10 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     }
 
     private fun emitBranchInstruction(opcode: Int, rs: Reg, rt: Reg, label: Label) {
+        emitBranchInstruction(opcode, rs.id, rt.id, label)
+    }
+
+    private fun emitBranchInstruction(opcode: Int, rs: Int, rt: Int, label: Label) {
         val instrVirtualPc = virtualPc
         emit(IInstruction(opcode, rs, rt, { (label.address - instrVirtualPc - 0x4) / 0x4 }))
     }
@@ -192,21 +341,25 @@ class Label {
         }
 }
 
-class RInstruction(val opcode: Int, val rd: Reg, val rs: Reg, val rt: Reg, val shift: Int = 0, val funct: Int = 0) : Instruction {
+class RInstruction internal constructor(val opcode: Int, val rs: Int, val rt: Int, val rd: Int, val shift: Int = 0, val funct: Int = 0) : Instruction {
+    constructor(opcode: Int, rs: Reg, rt: Reg, rd: Reg, shift: Int = 0, funct: Int = 0) : this(opcode, rs.id, rt.id, rd.id, shift, funct)
+
     override fun assemble(): Int {
         if (opcode > 0x3F) error("opcode value is too big: $opcode")
         if (shift > 0x1F) error("shift value is too big: $shift")
         if (funct > 0x3F) error("funct value is too big: $funct")
-        return (opcode shl 26) or (rs.id shl 21) or (rt.id shl 16) or (rd.id shl 11) or (shift shl 6) or funct
+        return (opcode shl 26) or (rs shl 21) or (rt shl 16) or (rd shl 11) or (shift shl 6) or funct
     }
 }
 
-class IInstruction(val opcode: Int, val rs: Reg, val rt: Reg, val imm: () -> Int) : Instruction {
+class IInstruction internal constructor(val opcode: Int, val rs: Int, val rt: Int, val imm: () -> Int) : Instruction {
+    constructor(opcode: Int, rs: Int, rt: Int, imm: Int) : this(opcode, rs, rt, { imm })
     constructor(opcode: Int, rs: Reg, rt: Reg, imm: Int) : this(opcode, rs, rt, { imm })
+    constructor(opcode: Int, rs: Reg, rt: Reg, imm: () -> Int) : this(opcode, rs.id, rt.id, imm)
 
     override fun assemble(): Int {
         if (opcode > 0x3F) error("opcode value is too big: $opcode")
-        return (opcode shl 26) or (rs.id shl 21) or (rt.id shl 16) or (imm().toShort().toInt() and 0xFFFF)
+        return (opcode shl 26) or (rs shl 21) or (rt shl 16) or (imm().toShort().toInt() and 0xFFFF)
     }
 }
 
@@ -217,6 +370,26 @@ class JInstruction(val opcode: Int, val address: () -> Int) : Instruction {
         if (opcode > 0x3F) error("opcode value is too big: $opcode")
         if (Integer.compareUnsigned(address(), 0x3FFFFFF) > 0) error("address value is too big: 0x${address().toHex()}")
         return (opcode shl 26) or address()
+    }
+}
+
+class FpuInstruction internal constructor(val opcode: Int, val fmt: Int, val ft: Int, val fs: Int, val fd: Int, val funct: Int = 0) : Instruction {
+    constructor(opcode: Int, fmt: Int, ft: FpuReg, fs: FpuReg, fd: FpuReg, funct: Int = 0) : this(opcode, fmt, ft.id, fs.id, fd.id, funct)
+
+    override fun assemble(): Int {
+        if (opcode > 0x3F) error("opcode value is too big: $opcode")
+        if (fmt > 0x1F) error("fmt value is too big: $fmt")
+        if (funct > 0x3F) error("funct value is too big: $funct")
+        return (opcode shl 26) or (fmt shl 21) or (ft shl 16) or (fs shl 11) or (fd shl 6) or funct
+    }
+}
+
+class CodeInstruction(val opcode: Int, val code: Int, val funct: Int = 0) : Instruction {
+    override fun assemble(): Int {
+        if (opcode > 0x3F) error("opcode value is too big: $opcode")
+        if (code > 0xFFFF) error("code value is too big: $opcode")
+        if (funct > 0x3F) error("funct value is too big: $funct")
+        return (opcode shl 26) or (code and 0xFFFF shl 6) or funct
     }
 }
 
@@ -245,6 +418,16 @@ enum class Reg(val id: Int) {
     s0(16), s1(17), s2(18), s3(19), s4(20), s5(21), s6(22), s7(23),
     k0(26), k1(27),
     gp(28), sp(29), fp(30), ra(31);
+}
+
+enum class FpuReg(val id: Int) {
+    f0(0), f1(1), f2(2), f3(3), f4(4),
+    f5(5), f6(6), f7(7), f8(8), f9(9),
+    f10(10), f11(11), f12(12), f13(13), f14(14),
+    f15(15), f16(16), f17(17), f18(18), f19(19),
+    f20(20), f21(21), f22(22), f23(23), f24(24),
+    f25(25), f26(26), f27(27), f28(28), f29(29),
+    f30(30), f31(31)
 }
 
 internal fun Int.toHex() = String.format("%08X", this)
