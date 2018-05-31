@@ -1,3 +1,5 @@
+#### Version: 1.3
+
 #### Version: 1.2
 - Added MIPS II instruction set (including FPU instructions)
 
