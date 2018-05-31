@@ -26,7 +26,7 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
         private set
     private val instructions = mutableListOf<Instruction>()
 
-    // MIPS I
+    // MIPS II
 
     fun lb(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b100_000, base, rt, offset))
     fun lbu(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b100_100, base, rt, offset))
@@ -43,6 +43,9 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     fun lwr(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b100_110, base, rt, offset))
     fun swl(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b101_010, base, rt, offset))
     fun swr(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b101_110, base, rt, offset))
+
+    fun ll(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b110_000, base, rt, offset))
+    fun sc(rt: Reg, offset: Int, base: Reg) = emit(IInstruction(0b111_000, base, rt, offset))
 
     fun addi(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_000, rs, rt, imm))
     fun addiu(rt: Reg, rs: Reg, imm: Int) = emit(IInstruction(0b001_001, rs, rt, imm))
@@ -91,18 +94,42 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     fun bne(rs: Reg, rt: Reg, label: Label) = emitBranchInstruction(0b000_101, rs, rt, label)
     fun blez(rs: Reg, label: Label) = emitBranchInstruction(0b000_110, rs, Reg.zero, label)
     fun bgtz(rs: Reg, label: Label) = emitBranchInstruction(0b000_111, rs, Reg.zero, label)
+    fun beql(rs: Reg, rt: Reg, label: Label) = emitBranchInstruction(0b010_100, rs, rt, label)
+    fun bnel(rs: Reg, rt: Reg, label: Label) = emitBranchInstruction(0b010_101, rs, rt, label)
+    fun blezl(rs: Reg, label: Label) = emitBranchInstruction(0b010_110, rs, Reg.zero, label)
+    fun bgtzl(rs: Reg, label: Label) = emitBranchInstruction(0b010_111, rs, Reg.zero, label)
 
-    fun bltz(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs, Reg.zero, label)
-    fun bgez(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs, Reg.at, label)
-    fun bltzal(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs, Reg.s0, label)
-    fun bgezal(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs, Reg.s1, label)
+    fun bltz(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs.id, 0b00000, label)
+    fun bgez(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs.id, 0b00001, label)
+    fun bltzal(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs.id, 0b10000, label)
+    fun bgezal(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs.id, 0b10001, label)
+    fun bltzl(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs.id, 0b00010, label)
+    fun bgezl(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs.id, 0b00011, label)
+    fun bltzall(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs.id, 0b10010, label)
+    fun bgezall(rs: Reg, label: Label) = emitBranchInstruction(0b000_001, rs.id, 0b10011, label)
 
     fun syscall(code: Int) = emit(CodeInstruction(0, code, 0b001_100))
     fun `break`(code: Int) = emit(CodeInstruction(0, code, 0b001_101))
 
+    fun tge(rs: Reg, rt: Reg, code: Int = 0x200) = emit(RInstruction(0, rs.id, rt.id, code ushr 5, code and 0x1F, 0b110_000))
+    fun tgeu(rs: Reg, rt: Reg, code: Int = 0x200) = emit(RInstruction(0, rs.id, rt.id, code ushr 5, code and 0x1F, 0b110_001))
+    fun tlt(rs: Reg, rt: Reg, code: Int = 0x200) = emit(RInstruction(0, rs.id, rt.id, code ushr 5, code and 0x1F, 0b110_010))
+    fun tltu(rs: Reg, rt: Reg, code: Int = 0x200) = emit(RInstruction(0, rs.id, rt.id, code ushr 5, code and 0x1F, 0b110_011))
+    fun teq(rs: Reg, rt: Reg, code: Int = 0x200) = emit(RInstruction(0, rs.id, rt.id, code ushr 5, code and 0x1F, 0b110_100))
+    fun tne(rs: Reg, rt: Reg, code: Int = 0x200) = emit(RInstruction(0, rs.id, rt.id, code ushr 5, code and 0x1F, 0b110_110))
+
+    fun tgei(rs: Reg, imm: Int) = emit(IInstruction(0b000_001, rs.id, 0b01000, imm))
+    fun tgeiu(rs: Reg, imm: Int) = emit(IInstruction(0b000_001, rs.id, 0b01001, imm))
+    fun tlti(rs: Reg, imm: Int) = emit(IInstruction(0b000_001, rs.id, 0b01010, imm))
+    fun tltiu(rs: Reg, imm: Int) = emit(IInstruction(0b000_001, rs.id, 0b01011, imm))
+    fun teqi(rs: Reg, imm: Int) = emit(IInstruction(0b000_001, rs.id, 0b01100, imm))
+    fun tnei(rs: Reg, imm: Int) = emit(IInstruction(0b000_001, rs.id, 0b01110, imm))
+
+    fun sync(stype: Int = 0) = emit(RInstruction(0, 0, 0, 0, stype, 0b001_111))
+
     fun nop() = emit(NopInstruction())
 
-    // FPU
+    // FPU (MIPS II)
 
     /** FPU (coprocessor 1) */
     private val COP1 = 0b010_001
@@ -129,6 +156,11 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     val div = DivFpu()
     val abs = AbsFpu()
     val neg = NegFpu()
+    val sqrt = SqrtFpu()
+    val round = RoundFpu()
+    val trunc = TruncFpu()
+    val ceil = CeilFpu()
+    val floor = FloorFpu()
 
     inner class AddFpu {
         fun s(fd: FpuReg, fs: FpuReg, ft: FpuReg) = emit(FpuInstruction(COP1, FMT_S, ft, fs, fd, 0b000_000))
@@ -158,6 +190,47 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     inner class NegFpu {
         fun s(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_S, FpuReg.f0, fs, fd, 0b000_111))
         fun d(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_D, FpuReg.f0, fs, fd, 0b000_111))
+    }
+
+    inner class SqrtFpu {
+        fun s(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_S, FpuReg.f0, fs, fd, 0b000_100))
+        fun d(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_D, FpuReg.f0, fs, fd, 0b000_100))
+    }
+
+    inner class RoundFpu {
+        val w = RoundWFpu()
+
+        inner class RoundWFpu {
+            fun s(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_S, FpuReg.f0, fs, fd, 0b001_100))
+            fun d(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_D, FpuReg.f0, fs, fd, 0b001_100))
+        }
+    }
+
+    inner class TruncFpu {
+        val w = TruncWFpu()
+
+        inner class TruncWFpu {
+            fun s(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_S, FpuReg.f0, fs, fd, 0b001_101))
+            fun d(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_D, FpuReg.f0, fs, fd, 0b001_101))
+        }
+    }
+
+    inner class CeilFpu {
+        val w = CeilWFpu()
+
+        inner class CeilWFpu {
+            fun s(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_S, FpuReg.f0, fs, fd, 0b001_110))
+            fun d(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_D, FpuReg.f0, fs, fd, 0b001_110))
+        }
+    }
+
+    inner class FloorFpu {
+        val w = FloorWFpu()
+
+        inner class FloorWFpu {
+            fun s(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_S, FpuReg.f0, fs, fd, 0b001_111))
+            fun d(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_D, FpuReg.f0, fs, fd, 0b001_111))
+        }
     }
 
     val c = CompareFpu()
@@ -213,8 +286,10 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
         fun d(fd: FpuReg, fs: FpuReg) = emit(FpuInstruction(COP1, FMT_D, FpuReg.f0, fs, fd, 0b000_110))
     }
 
-    fun bc1f(label: Label) = emitBranchInstruction(COP1, 0b01000, 0, label)
-    fun bc1t(label: Label) = emitBranchInstruction(COP1, 0b01000, 1, label)
+    fun bc1f(label: Label) = emitBranchInstruction(COP1, 0b01000, 0b00, label)
+    fun bc1t(label: Label) = emitBranchInstruction(COP1, 0b01000, 0b01, label)
+    fun bc1tl(label: Label) = emitBranchInstruction(COP1, 0b01000, 0b11, label)
+    fun bc1fl(label: Label) = emitBranchInstruction(COP1, 0b01000, 0b10, label)
 
     // Pseudo instructions / aliases
 

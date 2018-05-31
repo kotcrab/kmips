@@ -25,6 +25,9 @@ class AssemblerTest {
     @Test fun testSwl() = testInstruction("A89000CD", { swl(s0, 0xCD, a0) })
     @Test fun testSwr() = testInstruction("B89000CD", { swr(s0, 0xCD, a0) })
 
+    @Test fun testLl() = testInstruction("C09000CD", { ll(s0, 0xCD, a0) })
+    @Test fun testSc() = testInstruction("E09000CD", { sc(s0, 0xCD, a0) })
+
     @Test fun testAddi() = testInstruction("209000CD", { addi(s0, a0, 0xCD) })
     @Test fun testAddiu() = testInstruction("249000CD", { addiu(s0, a0, 0xCD) })
     @Test fun testSlti() = testInstruction("289000CD", { slti(s0, a0, 0xCD) })
@@ -72,14 +75,38 @@ class AssemblerTest {
     @Test fun testBne() = testBranchInstruction("16040001", { bne(s0, a0, it) })
     @Test fun testBlez() = testBranchInstruction("1A000001", { blez(s0, it) })
     @Test fun testBgtz() = testBranchInstruction("1E000001", { bgtz(s0, it) })
+    @Test fun testBeql() = testBranchInstruction("52040001", { beql(s0, a0, it) })
+    @Test fun testBnel() = testBranchInstruction("56040001", { bnel(s0, a0, it) })
+    @Test fun testBlezl() = testBranchInstruction("5A000001", { blezl(s0, it) })
+    @Test fun testBgtzl() = testBranchInstruction("5E000001", { bgtzl(s0, it) })
 
     @Test fun testBltz() = testBranchInstruction("06000001", { bltz(s0, it) })
     @Test fun testBgez() = testBranchInstruction("06010001", { bgez(s0, it) })
     @Test fun testBltzal() = testBranchInstruction("06100001", { bltzal(s0, it) })
     @Test fun testBgezal() = testBranchInstruction("06110001", { bgezal(s0, it) })
+    @Test fun testBltzl() = testBranchInstruction("06020001", { bltzl(s0, it) })
+    @Test fun testBgezl() = testBranchInstruction("06030001", { bgezl(s0, it) })
+    @Test fun testBltzall() = testBranchInstruction("06120001", { bltzall(s0, it) })
+    @Test fun testBgezall() = testBranchInstruction("06130001", { bgezall(s0, it) })
 
     @Test fun testSyscall() = testInstruction("0033734C", { syscall(0xCDCD) })
     @Test fun testBreak() = testInstruction("0033734D", { `break`(0xCDCD) })
+
+    @Test fun testTge() = testInstruction("02048030", { tge(s0, a0) })
+    @Test fun testTgeu() = testInstruction("02048031", { tgeu(s0, a0) })
+    @Test fun testTlt() = testInstruction("02048032", { tlt(s0, a0) })
+    @Test fun testTltu() = testInstruction("02048033", { tltu(s0, a0) })
+    @Test fun testTeq() = testInstruction("02048034", { teq(s0, a0) })
+    @Test fun testTne() = testInstruction("02048036", { tne(s0, a0) })
+
+    @Test fun testTgei() = testInstruction("060800CD", { tgei(s0, 0xCD) })
+    @Test fun testTgeiu() = testInstruction("060900CD", { tgeiu(s0, 0xCD) })
+    @Test fun testTlti() = testInstruction("060A00CD", { tlti(s0, 0xCD) })
+    @Test fun testTltiu() = testInstruction("060B00CD", { tltiu(s0, 0xCD) })
+    @Test fun testTeqi() = testInstruction("060C00CD", { teqi(s0, 0xCD) })
+    @Test fun testTnei() = testInstruction("060E00CD", { tnei(s0, 0xCD) })
+
+    @Test fun testSync() = testInstruction("0000000F", { sync(0) })
 
     @Test fun testNop() = testInstruction("00000000", { nop() })
 
@@ -103,6 +130,16 @@ class AssemblerTest {
     @Test fun testFpuAbsD() = testInstruction("46206105", { abs.d(f4, f12) })
     @Test fun testFpuNegS() = testInstruction("46006107", { neg.s(f4, f12) })
     @Test fun testFpuNegD() = testInstruction("46206107", { neg.d(f4, f12) })
+    @Test fun testFpuSqrtS() = testInstruction("46006104", { sqrt.s(f4, f12) })
+    @Test fun testFpuSqrtD() = testInstruction("46206104", { sqrt.d(f4, f12) })
+    @Test fun testFpuRoundWS() = testInstruction("4600610C", { round.w.s(f4, f12) })
+    @Test fun testFpuRoundWD() = testInstruction("4620610C", { round.w.d(f4, f12) })
+    @Test fun testFpuTruncWS() = testInstruction("4600610D", { trunc.w.s(f4, f12) })
+    @Test fun testFpuTruncWD() = testInstruction("4620610D", { trunc.w.d(f4, f12) })
+    @Test fun testFpuCeilWS() = testInstruction("4600610E", { ceil.w.s(f4, f12) })
+    @Test fun testFpuCeilWD() = testInstruction("4620610E", { ceil.w.d(f4, f12) })
+    @Test fun testFpuFloorWS() = testInstruction("4600610F", { floor.w.s(f4, f12) })
+    @Test fun testFpuFloorWD() = testInstruction("4620610F", { floor.w.d(f4, f12) })
 
     @Test fun testFpuCondEqS() = testInstruction("460C2032", { c.eq.s(f4, f12) })
     @Test fun testFpuCondEqD() = testInstruction("462C2032", { c.eq.d(f4, f12) })
@@ -123,6 +160,8 @@ class AssemblerTest {
 
     @Test fun testBc1f() = testBranchInstruction("45000001", { bc1f(it) })
     @Test fun testBc1t() = testBranchInstruction("45010001", { bc1t(it) })
+    @Test fun testBc1tl() = testBranchInstruction("45030001", { bc1tl(it) })
+    @Test fun testBc1fl() = testBranchInstruction("45020001", { bc1fl(it) })
 
     @Test fun testB() = testBranchInstruction("10000001", { b(it) })
     @Test fun testBlt() = testBranchInstruction("0204082A14200001", { blt(a0, s0, it) })
