@@ -1,4 +1,5 @@
 #### Version: 1.3
+- Updated Kotlin to 1.3.20
 
 #### Version: 1.2
 - Added MIPS II instruction set (including FPU instructions)
