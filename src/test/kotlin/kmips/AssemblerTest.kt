@@ -71,23 +71,23 @@ class AssemblerTest {
     @Test fun testJalr() = testInstruction("0200F809", { jalr(s0) })
     @Test fun testJalr2() = testInstruction("02002009", { jalr(a0, s0) })
 
-    @Test fun testBeq() = testBranchInstruction("12040001", { beq(s0, a0, it) })
-    @Test fun testBne() = testBranchInstruction("16040001", { bne(s0, a0, it) })
-    @Test fun testBlez() = testBranchInstruction("1A000001", { blez(s0, it) })
-    @Test fun testBgtz() = testBranchInstruction("1E000001", { bgtz(s0, it) })
-    @Test fun testBeql() = testBranchInstruction("52040001", { beql(s0, a0, it) })
-    @Test fun testBnel() = testBranchInstruction("56040001", { bnel(s0, a0, it) })
-    @Test fun testBlezl() = testBranchInstruction("5A000001", { blezl(s0, it) })
-    @Test fun testBgtzl() = testBranchInstruction("5E000001", { bgtzl(s0, it) })
+    @Test fun testBeq() = testBranchInstruction("12040001") { beq(s0, a0, it) }
+    @Test fun testBne() = testBranchInstruction("16040001") { bne(s0, a0, it) }
+    @Test fun testBlez() = testBranchInstruction("1A000001") { blez(s0, it) }
+    @Test fun testBgtz() = testBranchInstruction("1E000001") { bgtz(s0, it) }
+    @Test fun testBeql() = testBranchInstruction("52040001") { beql(s0, a0, it) }
+    @Test fun testBnel() = testBranchInstruction("56040001") { bnel(s0, a0, it) }
+    @Test fun testBlezl() = testBranchInstruction("5A000001") { blezl(s0, it) }
+    @Test fun testBgtzl() = testBranchInstruction("5E000001") { bgtzl(s0, it) }
 
-    @Test fun testBltz() = testBranchInstruction("06000001", { bltz(s0, it) })
-    @Test fun testBgez() = testBranchInstruction("06010001", { bgez(s0, it) })
-    @Test fun testBltzal() = testBranchInstruction("06100001", { bltzal(s0, it) })
-    @Test fun testBgezal() = testBranchInstruction("06110001", { bgezal(s0, it) })
-    @Test fun testBltzl() = testBranchInstruction("06020001", { bltzl(s0, it) })
-    @Test fun testBgezl() = testBranchInstruction("06030001", { bgezl(s0, it) })
-    @Test fun testBltzall() = testBranchInstruction("06120001", { bltzall(s0, it) })
-    @Test fun testBgezall() = testBranchInstruction("06130001", { bgezall(s0, it) })
+    @Test fun testBltz() = testBranchInstruction("06000001") { bltz(s0, it) }
+    @Test fun testBgez() = testBranchInstruction("06010001") { bgez(s0, it) }
+    @Test fun testBltzal() = testBranchInstruction("06100001") { bltzal(s0, it) }
+    @Test fun testBgezal() = testBranchInstruction("06110001") { bgezal(s0, it) }
+    @Test fun testBltzl() = testBranchInstruction("06020001") { bltzl(s0, it) }
+    @Test fun testBgezl() = testBranchInstruction("06030001") { bgezl(s0, it) }
+    @Test fun testBltzall() = testBranchInstruction("06120001") { bltzall(s0, it) }
+    @Test fun testBgezall() = testBranchInstruction("06130001") { bgezall(s0, it) }
 
     @Test fun testSyscall() = testInstruction("0033734C", { syscall(0xCDCD) })
     @Test fun testBreak() = testInstruction("0033734D", { `break`(0xCDCD) })
@@ -158,16 +158,16 @@ class AssemblerTest {
     @Test fun testFpuMovS() = testInstruction("46006106", { mov.s(f4, f12) })
     @Test fun testFpuMovD() = testInstruction("46206106", { mov.d(f4, f12) })
 
-    @Test fun testBc1f() = testBranchInstruction("45000001", { bc1f(it) })
-    @Test fun testBc1t() = testBranchInstruction("45010001", { bc1t(it) })
-    @Test fun testBc1tl() = testBranchInstruction("45030001", { bc1tl(it) })
-    @Test fun testBc1fl() = testBranchInstruction("45020001", { bc1fl(it) })
+    @Test fun testBc1f() = testBranchInstruction("45000001") { bc1f(it) }
+    @Test fun testBc1t() = testBranchInstruction("45010001") { bc1t(it) }
+    @Test fun testBc1tl() = testBranchInstruction("45030001") { bc1tl(it) }
+    @Test fun testBc1fl() = testBranchInstruction("45020001") { bc1fl(it) }
 
-    @Test fun testB() = testBranchInstruction("10000001", { b(it) })
-    @Test fun testBlt() = testBranchInstruction("0204082A14200001", { blt(a0, s0, it) })
-    @Test fun testBge() = testBranchInstruction("0204082A10200001", { bge(a0, s0, it) })
-    @Test fun testBgt() = testBranchInstruction("0090082A14200001", { bgt(a0, s0, it) })
-    @Test fun testBle() = testBranchInstruction("0090082A10200001", { ble(a0, s0, it) })
+    @Test fun testB() = testBranchInstruction("10000001") { b(it) }
+    @Test fun testBlt() = testBranchInstruction("0090082A14200001") { blt(a0, s0, it) }
+    @Test fun testBge() = testBranchInstruction("0090082A10200001") { bge(a0, s0, it) }
+    @Test fun testBgt() = testBranchInstruction("0204082A14200001") { bgt(a0, s0, it) }
+    @Test fun testBle() = testBranchInstruction("0204082A10200001") { ble(a0, s0, it) }
     @Test fun testNeg() = testInstruction("00048022", { neg(s0, a0) })
     @Test fun testNot() = testInstruction("00808027", { not(s0, a0) })
     @Test fun testLa() = testInstruction("3C10ABAB3610CDCD", { la(s0, 0xABABCDCD.toInt()) })
@@ -212,7 +212,7 @@ class AssemblerTest {
             add(a0, a0, a0)
             label(label)
             add(s0, s0, s0)
-        }.map { it.toHex() }.joinToString(separator = " ")
+        }.joinToString(separator = " ") { it.toHex() }
         assertEquals("02008410 00000000 20208400 20801002", result)
     }
 
@@ -327,7 +327,7 @@ class IInstructionTest {
         IInstruction(0x3F + 1, zero, zero, 0).assemble()
     }
 
-    @Test()
+    @Test
     fun testImm() {
         (0 until 0xFFFF).forEach {
             assertEquals(it, IInstruction(0, zero, zero, it).assemble() and 0xFFFF)

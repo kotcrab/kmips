@@ -298,22 +298,22 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     }
 
     fun blt(rt: Reg, rs: Reg, label: Label) {
-        slt(Reg.at, rs, rt)
+        slt(Reg.at, rt, rs)
         bne(Reg.at, Reg.zero, label)
     }
 
     fun bge(rt: Reg, rs: Reg, label: Label) {
-        slt(Reg.at, rs, rt)
+        slt(Reg.at, rt, rs)
         beq(Reg.at, Reg.zero, label)
     }
 
     fun bgt(rt: Reg, rs: Reg, label: Label) {
-        slt(Reg.at, rt, rs)
+        slt(Reg.at, rs, rt)
         bne(Reg.at, Reg.zero, label)
     }
 
     fun ble(rt: Reg, rs: Reg, label: Label) {
-        slt(Reg.at, rt, rs)
+        slt(Reg.at, rs, rt)
         beq(Reg.at, Reg.zero, label)
     }
 
@@ -387,7 +387,7 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     }
 
     fun assembleAsHexString(): String {
-        return assembleAsList().map { it.toHex() }.joinToString(separator = "")
+        return assembleAsList().joinToString(separator = "") { it.toHex() }
     }
 
     fun assembleAsByteArray(): ByteArray {

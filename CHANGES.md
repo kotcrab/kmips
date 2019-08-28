@@ -1,4 +1,6 @@
 #### Version: 1.4
+- Fixed incorrect assembly for pseudo-instructions: `blt`, `bge`, `bgt`, `ble`
+- Updated Kotlin to 1.3.50
 
 #### Version: 1.3
 - Updated Kotlin to 1.3.20
