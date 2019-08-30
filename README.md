@@ -9,7 +9,7 @@ in few fan translations and game modding projects.
 
 kmips is available from Maven Central repository
 ```groovy
-compile "com.kotcrab.kmips:kmips:1.2"
+compile "com.kotcrab.kmips:kmips:1.4"
 ```
 
 ##### Example code 
