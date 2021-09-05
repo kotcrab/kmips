@@ -1,3 +1,5 @@
+#### Version: 1.6
+
 #### Version: 1.5
 - Updated Kotlin to 1.5.30
 - JVM target is now JVM 11

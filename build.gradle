@@ -14,7 +14,7 @@ plugins {
 }
 
 group 'com.kotcrab.kmips'
-version '1.5-SNAPSHOT'
+version '1.6-SNAPSHOT'
 
 apply plugin: 'kotlin'
 apply from: 'deploy.gradle'
