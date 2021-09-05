@@ -6,8 +6,6 @@ import kmips.Reg.*
 import org.junit.Assert
 import org.junit.Test
 
-
-/** @author Kotcrab */
 class AssemblerTest {
     @Test fun testLb() = testInstruction("809000CD", { lb(s0, 0xCD, a0) })
     @Test fun testLbu() = testInstruction("909000CD", { lbu(s0, 0xCD, a0) })

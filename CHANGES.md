@@ -1,4 +1,6 @@
 #### Version: 1.5
+- Updated Kotlin to 1.5.30
+- JVM target is now JVM 11
 
 #### Version: 1.4
 - Fixed incorrect assembly for pseudo-instructions: `blt`, `bge`, `bgt`, `ble`

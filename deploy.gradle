@@ -62,7 +62,7 @@ uploadArchives {
                 developers {
                     developer {
                         id 'kotcrab'
-                        name 'Pawel Pastuszak'
+                        name 'Kotcrab'
                         url 'https://kotcrab.com'
                     }
                 }

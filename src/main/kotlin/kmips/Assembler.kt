@@ -2,7 +2,6 @@ package kmips
 
 import java.io.ByteArrayOutputStream
 
-/** @author Kotcrab */
 fun assemble(startPc: Int = 0, endianness: Endianness = Endianness.Little, init: Assembler.() -> Unit): List<Int> {
     val assembler = Assembler(startPc, endianness)
     assembler.init()
@@ -15,13 +14,34 @@ fun assembleAsHexString(startPc: Int = 0, endianness: Endianness = Endianness.Li
     return assembler.assembleAsHexString()
 }
 
-fun assembleAsByteArray(startPc: Int = 0, endianness: Endianness = Endianness.Little, init: Assembler.() -> Unit): ByteArray {
+fun assembleAsByteArray(
+    startPc: Int = 0,
+    endianness: Endianness = Endianness.Little,
+    init: Assembler.() -> Unit
+): ByteArray {
     val assembler = Assembler(startPc, endianness)
     assembler.init()
     return assembler.assembleAsByteArray()
 }
 
-class Assembler(val startPc: Int, val endianness: Endianness) {
+class Assembler(startPc: Int, val endianness: Endianness) {
+    companion object {
+        /** FPU (coprocessor 1) */
+        private const val COP1 = 0b010_001
+
+        /** 32-bit float */
+        private const val FMT_S = 16
+
+        /** 64-bit float */
+        private const val FMT_D = 17
+
+        /** 32-bit signed magnitude int */
+        private const val FMT_W = 20
+
+        /** 64-bit signed magnitude int */
+        private const val FMT_L = 21
+    }
+
     var virtualPc = startPc
         private set
     private val instructions = mutableListOf<Instruction>()
@@ -112,9 +132,13 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     fun `break`(code: Int) = emit(CodeInstruction(0, code, 0b001_101))
 
     fun tge(rs: Reg, rt: Reg, code: Int = 0x200) = emit(RInstruction(0, rs.id, rt.id, code ushr 5, code and 0x1F, 0b110_000))
-    fun tgeu(rs: Reg, rt: Reg, code: Int = 0x200) = emit(RInstruction(0, rs.id, rt.id, code ushr 5, code and 0x1F, 0b110_001))
+    fun tgeu(rs: Reg, rt: Reg, code: Int = 0x200) =
+        emit(RInstruction(0, rs.id, rt.id, code ushr 5, code and 0x1F, 0b110_001))
+
     fun tlt(rs: Reg, rt: Reg, code: Int = 0x200) = emit(RInstruction(0, rs.id, rt.id, code ushr 5, code and 0x1F, 0b110_010))
-    fun tltu(rs: Reg, rt: Reg, code: Int = 0x200) = emit(RInstruction(0, rs.id, rt.id, code ushr 5, code and 0x1F, 0b110_011))
+    fun tltu(rs: Reg, rt: Reg, code: Int = 0x200) =
+        emit(RInstruction(0, rs.id, rt.id, code ushr 5, code and 0x1F, 0b110_011))
+
     fun teq(rs: Reg, rt: Reg, code: Int = 0x200) = emit(RInstruction(0, rs.id, rt.id, code ushr 5, code and 0x1F, 0b110_100))
     fun tne(rs: Reg, rt: Reg, code: Int = 0x200) = emit(RInstruction(0, rs.id, rt.id, code ushr 5, code and 0x1F, 0b110_110))
 
@@ -130,17 +154,6 @@ class Assembler(val startPc: Int, val endianness: Endianness) {
     fun nop() = emit(NopInstruction())
 
     // FPU (MIPS II)
-
-    /** FPU (coprocessor 1) */
-    private val COP1 = 0b010_001
-    /** 32 bit float */
-    private val FMT_S = 16
-    /** 64 bit float */
-    private val FMT_D = 17
-    /** 32 bit signed magnitude int */
-    private val FMT_W = 20
-    /** 64 bit signed magnitude int */
-    private val FMT_L = 21
 
     fun lwc1(ft: FpuReg, offset: Int, base: Reg) = emit(IInstruction(0b110_001, base.id, ft.id, offset))
     fun swc1(ft: FpuReg, offset: Int, base: Reg) = emit(IInstruction(0b111_001, base.id, ft.id, offset))
@@ -416,8 +429,16 @@ class Label {
         }
 }
 
-class RInstruction internal constructor(val opcode: Int, val rs: Int, val rt: Int, val rd: Int, val shift: Int = 0, val funct: Int = 0) : Instruction {
-    constructor(opcode: Int, rs: Reg, rt: Reg, rd: Reg, shift: Int = 0, funct: Int = 0) : this(opcode, rs.id, rt.id, rd.id, shift, funct)
+class RInstruction internal constructor(
+    val opcode: Int,
+    val rs: Int,
+    val rt: Int,
+    val rd: Int,
+    val shift: Int = 0,
+    val funct: Int = 0
+) : Instruction {
+    constructor(opcode: Int, rs: Reg, rt: Reg, rd: Reg, shift: Int = 0, funct: Int = 0)
+            : this(opcode, rs.id, rt.id, rd.id, shift, funct)
 
     override fun assemble(): Int {
         if (opcode > 0x3F) error("opcode value is too big: $opcode")
@@ -448,8 +469,16 @@ class JInstruction(val opcode: Int, val address: () -> Int) : Instruction {
     }
 }
 
-class FpuInstruction internal constructor(val opcode: Int, val fmt: Int, val ft: Int, val fs: Int, val fd: Int, val funct: Int = 0) : Instruction {
-    constructor(opcode: Int, fmt: Int, ft: FpuReg, fs: FpuReg, fd: FpuReg, funct: Int = 0) : this(opcode, fmt, ft.id, fs.id, fd.id, funct)
+class FpuInstruction internal constructor(
+    val opcode: Int,
+    val fmt: Int,
+    val ft: Int,
+    val fs: Int,
+    val fd: Int,
+    val funct: Int = 0
+) : Instruction {
+    constructor(opcode: Int, fmt: Int, ft: FpuReg, fs: FpuReg, fd: FpuReg, funct: Int = 0)
+            : this(opcode, fmt, ft.id, fs.id, fd.id, funct)
 
     override fun assemble(): Int {
         if (opcode > 0x3F) error("opcode value is too big: $opcode")
@@ -484,6 +513,7 @@ enum class Endianness {
     Little, Big
 }
 
+@Suppress("EnumEntryName")
 enum class Reg(val id: Int) {
     zero(0),
     at(1),
@@ -495,6 +525,7 @@ enum class Reg(val id: Int) {
     gp(28), sp(29), fp(30), ra(31);
 }
 
+@Suppress("EnumEntryName")
 enum class FpuReg(val id: Int) {
     f0(0), f1(1), f2(2), f3(3), f4(4),
     f5(5), f6(6), f7(7), f8(8), f9(9),
