@@ -17,7 +17,7 @@ fun assembleAsHexString(startPc: Int = 0, endianness: Endianness = Endianness.Li
 fun assembleAsByteArray(
   startPc: Int = 0,
   endianness: Endianness = Endianness.Little,
-  init: Assembler.() -> Unit
+  init: Assembler.() -> Unit,
 ): ByteArray {
   val assembler = Assembler(startPc, endianness)
   assembler.init()
@@ -373,7 +373,7 @@ class Assembler(startPc: Int, val endianness: Endianness) {
 
   private fun emitBranchInstruction(opcode: Int, rs: Int, rt: Int, label: Label) {
     val instrVirtualPc = virtualPc
-    emit(IInstruction(opcode, rs, rt, { (label.address - instrVirtualPc - 0x4) / 0x4 }))
+    emit(IInstruction(opcode, rs, rt) { (label.address - instrVirtualPc - 0x4) / 0x4 })
   }
 
   private fun emitJumpInstruction(opcode: Int, address: Int) {
@@ -430,12 +430,12 @@ class Label {
 }
 
 class RInstruction internal constructor(
-  val opcode: Int,
-  val rs: Int,
-  val rt: Int,
-  val rd: Int,
-  val shift: Int = 0,
-  val funct: Int = 0
+  private val opcode: Int,
+  private val rs: Int,
+  private val rt: Int,
+  private val rd: Int,
+  private val shift: Int = 0,
+  private val funct: Int = 0,
 ) : Instruction {
   constructor(opcode: Int, rs: Reg, rt: Reg, rd: Reg, shift: Int = 0, funct: Int = 0)
     : this(opcode, rs.id, rt.id, rd.id, shift, funct)
@@ -448,7 +448,12 @@ class RInstruction internal constructor(
   }
 }
 
-class IInstruction internal constructor(val opcode: Int, val rs: Int, val rt: Int, val imm: () -> Int) : Instruction {
+class IInstruction internal constructor(
+  private val opcode: Int,
+  private val rs: Int,
+  private val rt: Int,
+  private val imm: () -> Int,
+) : Instruction {
   constructor(opcode: Int, rs: Int, rt: Int, imm: Int) : this(opcode, rs, rt, { imm })
   constructor(opcode: Int, rs: Reg, rt: Reg, imm: Int) : this(opcode, rs, rt, { imm })
   constructor(opcode: Int, rs: Reg, rt: Reg, imm: () -> Int) : this(opcode, rs.id, rt.id, imm)
@@ -459,7 +464,10 @@ class IInstruction internal constructor(val opcode: Int, val rs: Int, val rt: In
   }
 }
 
-class JInstruction(val opcode: Int, val address: () -> Int) : Instruction {
+class JInstruction(
+  private val opcode: Int,
+  private val address: () -> Int,
+) : Instruction {
   constructor(opcode: Int, address: Int) : this(opcode, { address })
 
   override fun assemble(): Int {
@@ -469,13 +477,26 @@ class JInstruction(val opcode: Int, val address: () -> Int) : Instruction {
   }
 }
 
+class CodeInstruction(
+  private val opcode: Int,
+  private val code: Int,
+  private val funct: Int = 0,
+) : Instruction {
+  override fun assemble(): Int {
+    if (opcode > 0x3F) error("opcode value is too big: $opcode")
+    if (code > 0xFFFF) error("code value is too big: $opcode")
+    if (funct > 0x3F) error("funct value is too big: $funct")
+    return (opcode shl 26) or (code and 0xFFFF shl 6) or funct
+  }
+}
+
 class FpuInstruction internal constructor(
-  val opcode: Int,
-  val fmt: Int,
-  val ft: Int,
-  val fs: Int,
-  val fd: Int,
-  val funct: Int = 0
+  private val opcode: Int,
+  private val fmt: Int,
+  private val ft: Int,
+  private val fs: Int,
+  private val fd: Int,
+  private val funct: Int = 0,
 ) : Instruction {
   constructor(opcode: Int, fmt: Int, ft: FpuReg, fs: FpuReg, fd: FpuReg, funct: Int = 0)
     : this(opcode, fmt, ft.id, fs.id, fd.id, funct)
@@ -488,21 +509,14 @@ class FpuInstruction internal constructor(
   }
 }
 
-class CodeInstruction(val opcode: Int, val code: Int, val funct: Int = 0) : Instruction {
-  override fun assemble(): Int {
-    if (opcode > 0x3F) error("opcode value is too big: $opcode")
-    if (code > 0xFFFF) error("code value is too big: $opcode")
-    if (funct > 0x3F) error("funct value is too big: $funct")
-    return (opcode shl 26) or (code and 0xFFFF shl 6) or funct
-  }
+class DataPseudoInstruction(
+  private val data: Int,
+) : Instruction {
+  override fun assemble(): Int = data
 }
 
 class NopInstruction : Instruction {
   override fun assemble(): Int = 0
-}
-
-class DataPseudoInstruction(val data: Int) : Instruction {
-  override fun assemble(): Int = data
 }
 
 interface Instruction {
@@ -513,7 +527,7 @@ enum class Endianness {
   Little, Big
 }
 
-@Suppress("EnumEntryName")
+@Suppress("EnumEntryName", "unused")
 enum class Reg(val id: Int) {
   zero(0),
   at(1),
@@ -525,7 +539,7 @@ enum class Reg(val id: Int) {
   gp(28), sp(29), fp(30), ra(31);
 }
 
-@Suppress("EnumEntryName")
+@Suppress("EnumEntryName", "unused")
 enum class FpuReg(val id: Int) {
   f0(0), f1(1), f2(2), f3(3), f4(4),
   f5(5), f6(6), f7(7), f8(8), f9(9),

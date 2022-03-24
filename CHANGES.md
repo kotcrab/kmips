@@ -1,4 +1,5 @@
 #### Version: 1.6
+- Updated Kotlin to 1.6.10
 
 #### Version: 1.5
 
