@@ -1,40 +1,13 @@
-buildscript {
-  ext.kotlinVersion = '1.6.10'
-
-  repositories {
-    mavenCentral()
-  }
-  dependencies {
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-  }
-}
-
 plugins {
-  id 'io.codearte.nexus-staging' version '0.11.0'
+  id "org.jetbrains.kotlin.jvm" version "1.6.10"
+  id "java-library"
+  id "maven-publish"
+  id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
+  id "signing"
 }
 
-group 'com.kotcrab.kmips'
-version '1.6-SNAPSHOT'
-
-apply plugin: 'kotlin'
-apply from: 'deploy.gradle'
-
-uploadArchives {
-  repositories {
-    mavenDeployer {
-      pom.project {
-        name 'kmips'
-        artifactId 'kmips'
-        packaging 'jar'
-        description 'MIPS assembler intended for assembling small code patches'
-      }
-    }
-  }
-}
-
-nexusStaging {
-  packageGroup = "com.kotcrab"
-}
+group "com.kotcrab.kmips"
+version "1.7-SNAPSHOT"
 
 repositories {
   mavenCentral()
@@ -53,6 +26,53 @@ compileTestKotlin {
 }
 
 dependencies {
-  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-  testImplementation group: 'junit', name: 'junit', version: '4.11'
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:1.6.10"
+  testImplementation "junit:junit:4.11"
+}
+
+java {
+  withJavadocJar()
+  withSourcesJar()
+}
+
+nexusPublishing {
+  repositories {
+    sonatype()
+  }
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      from(components.java)
+      pom {
+        name.set("kmips")
+        description.set("MIPS assembler intended for assembling small code patches")
+        url.set("https://github.com/kotcrab/kmips")
+        licenses {
+          license {
+            name.set("The Apache License, Version 2.0")
+            url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+          }
+        }
+        developers {
+          developer {
+            id.set("kotcrab")
+            name.set("Kotcrab")
+            url.set("https://kotcrab.com")
+          }
+        }
+        scm {
+          connection.set("scm:git:git@github.com:kotcrab/kmips.git")
+          developerConnection.set("scm:git:git@github.com:kotcrab/kmips.git")
+          url.set("git@github.com:kotcrab/kmips.git")
+        }
+      }
+    }
+  }
+}
+
+signing {
+  required { !project.version.endsWith("-SNAPSHOT") && !project.hasProperty("skipSigning") }
+  sign publishing.publications.mavenJava
 }
