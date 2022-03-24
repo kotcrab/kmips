@@ -454,7 +454,7 @@ class IInstruction internal constructor(
   private val rt: Int,
   private val imm: () -> Int,
 ) : Instruction {
-  constructor(opcode: Int, rs: Int, rt: Int, imm: Int) : this(opcode, rs, rt, { imm })
+  internal constructor(opcode: Int, rs: Int, rt: Int, imm: Int) : this(opcode, rs, rt, { imm })
   constructor(opcode: Int, rs: Reg, rt: Reg, imm: Int) : this(opcode, rs, rt, { imm })
   constructor(opcode: Int, rs: Reg, rt: Reg, imm: () -> Int) : this(opcode, rs.id, rt.id, imm)
 
