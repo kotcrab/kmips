@@ -1,16 +1,16 @@
 buildscript {
-    ext.kotlinVersion = '1.5.30'
+  ext.kotlinVersion = '1.5.30'
 
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-    }
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+  }
 }
 
 plugins {
-    id 'io.codearte.nexus-staging' version '0.11.0'
+  id 'io.codearte.nexus-staging' version '0.11.0'
 }
 
 group 'com.kotcrab.kmips'
@@ -20,39 +20,39 @@ apply plugin: 'kotlin'
 apply from: 'deploy.gradle'
 
 uploadArchives {
-    repositories {
-        mavenDeployer {
-            pom.project {
-                name 'kmips'
-                artifactId 'kmips'
-                packaging 'jar'
-                description 'MIPS assembler intended for assembling small code patches'
-            }
-        }
+  repositories {
+    mavenDeployer {
+      pom.project {
+        name 'kmips'
+        artifactId 'kmips'
+        packaging 'jar'
+        description 'MIPS assembler intended for assembling small code patches'
+      }
     }
+  }
 }
 
 nexusStaging {
-    packageGroup = "com.kotcrab"
+  packageGroup = "com.kotcrab"
 }
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 compileKotlin {
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+  kotlinOptions {
+    jvmTarget = "11"
+  }
 }
 
 compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+  kotlinOptions {
+    jvmTarget = "11"
+  }
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    testImplementation group: 'junit', name: 'junit', version: '4.11'
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+  testImplementation group: 'junit', name: 'junit', version: '4.11'
 }
