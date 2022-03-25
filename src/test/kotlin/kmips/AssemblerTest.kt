@@ -1,6 +1,5 @@
 package kmips
 
-import junit.framework.TestCase.assertEquals
 import kmips.FpuReg.f12
 import kmips.FpuReg.f24
 import kmips.FpuReg.f4
@@ -9,8 +8,10 @@ import kmips.Reg.s0
 import kmips.Reg.sp
 import kmips.Reg.t0
 import kmips.Reg.zero
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class AssemblerTest {
   @Test
@@ -442,11 +443,15 @@ class AssemblerTest {
   @Test
   fun testSgt() = testInstruction("0104802A", { sgt(s0, a0, t0) })
 
-  @Test(expected = IllegalStateException::class)
-  fun testJIllegalLsbBits() = testInstruction("0A3F48E8", { j(0x08FD23A1) }, 0x0896D6E4)
+  @Test
+  fun testJIllegalLsbBits() {
+    assertThrows<IllegalStateException> { testInstruction("0A3F48E8", { j(0x08FD23A1) }, 0x0896D6E4) }
+  }
 
-  @Test(expected = IllegalStateException::class)
-  fun testJIllegalMsbBits() = testInstruction("0A3F48E8", { j(0xF8FD23A0.toInt()) }, 0x0896D6E4)
+  @Test
+  fun testJIllegalMsbBits() {
+    assertThrows<IllegalStateException> { testInstruction("0A3F48E8", { j(0xF8FD23A0.toInt()) }, 0x0896D6E4) }
+  }
 
   @Test
   fun testAddSigned() = testInstruction("23BDFFFC", { addi(sp, sp, -4) })
@@ -487,7 +492,7 @@ class AssemblerTest {
     val result = assemble(endianness = Endianness.Big) {
       sw(s0, 0xCD, a0)
     }
-    Assert.assertArrayEquals(arrayOf(0xAC9000CD.toInt()), result.toTypedArray())
+    assertArrayEquals(arrayOf(0xAC9000CD.toInt()), result.toTypedArray())
   }
 
   @Test
@@ -495,7 +500,7 @@ class AssemblerTest {
     val result = assembleAsHexString(endianness = Endianness.Big) {
       sw(s0, 0xCD, a0)
     }
-    Assert.assertEquals("AC9000CD", result)
+    assertEquals("AC9000CD", result)
   }
 
   @Test
@@ -503,21 +508,25 @@ class AssemblerTest {
     val result = assembleAsByteArray(endianness = Endianness.Big) {
       sw(s0, 0xCD, a0)
     }
-    Assert.assertArrayEquals(arrayOf(0xAC, 0x90, 0x00, 0xCD).map { it.toByte() }.toByteArray(), result)
+    assertArrayEquals(arrayOf(0xAC, 0x90, 0x00, 0xCD).map { it.toByte() }.toByteArray(), result)
   }
 }
 
 class LabelTest {
-  @Test(expected = IllegalStateException::class)
+  @Test
   fun testNotAssigned() {
-    Label().address
+    assertThrows<IllegalStateException> {
+      Label().address
+    }
   }
 
-  @Test(expected = IllegalStateException::class)
+  @Test
   fun testTwiceAssigned() {
-    val label = Label()
-    label.address = 0
-    label.address = 0
+    assertThrows<IllegalStateException> {
+      val label = Label()
+      label.address = 0
+      label.address = 0
+    }
   }
 }
 
@@ -529,9 +538,9 @@ class RInstructionTest {
     }
   }
 
-  @Test(expected = IllegalStateException::class)
+  @Test
   fun testIllegalOpcode() {
-    RInstruction(0x3F + 1, zero, zero, zero).assemble()
+    assertThrows<IllegalStateException> { RInstruction(0x3F + 1, zero, zero, zero).assemble() }
   }
 
   @Test
@@ -541,9 +550,9 @@ class RInstructionTest {
     }
   }
 
-  @Test(expected = IllegalStateException::class)
+  @Test
   fun testIllegalShift() {
-    RInstruction(0, zero, zero, zero, 0x1F + 1).assemble()
+    assertThrows<IllegalStateException> { RInstruction(0, zero, zero, zero, 0x1F + 1).assemble() }
   }
 
   @Test
@@ -553,9 +562,9 @@ class RInstructionTest {
     }
   }
 
-  @Test(expected = IllegalStateException::class)
+  @Test
   fun testIllegalFunct() {
-    RInstruction(0, zero, zero, zero, 0, 0x3F + 1).assemble()
+    assertThrows<IllegalStateException> { RInstruction(0, zero, zero, zero, 0, 0x3F + 1).assemble() }
   }
 
   @Test
@@ -588,9 +597,9 @@ class IInstructionTest {
     }
   }
 
-  @Test(expected = IllegalStateException::class)
+  @Test
   fun testIllegalOpcode() {
-    IInstruction(0x3F + 1, zero, zero, 0).assemble()
+    assertThrows<IllegalStateException> { IInstruction(0x3F + 1, zero, zero, 0).assemble() }
   }
 
   @Test
@@ -623,9 +632,9 @@ class JInstructionTest {
     }
   }
 
-  @Test(expected = IllegalStateException::class)
+  @Test
   fun testIllegalOpcode() {
-    JInstruction(0x3F + 1, 0).assemble()
+    assertThrows<IllegalStateException> { JInstruction(0x3F + 1, 0).assemble() }
   }
 
   @Test
@@ -635,9 +644,9 @@ class JInstructionTest {
     }
   }
 
-  @Test(expected = IllegalStateException::class)
+  @Test
   fun testIllegalAddress() {
-    JInstruction(0, 0x3FFFFFF + 1).assemble()
+    assertThrows<IllegalStateException> { JInstruction(0, 0x3FFFFFF + 1).assemble() }
   }
 }
 
