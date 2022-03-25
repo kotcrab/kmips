@@ -1,11 +1,11 @@
 kmips
 -----
 
-kmips is a MIPS assembler that is invoked directly from Kotlin code. It implements MIPS II instruction set, including FPU (
-coprocessor 1) instructions. The main purpose of kmips is to provide simple way of writing code patches for compiled
+kmips is a MIPS assembler that is invoked directly from Kotlin code. It implements MIPS II instruction set, including FPU 
+(coprocessor 1) instructions. The main purpose of kmips is to provide simple way of writing code patches for compiled
 executables. It was successfully used in few fan translations and game modding projects.
 
-kmips is available from Maven Central repository
+kmips is available from the Maven Central repository:
 
 ```groovy
 compile "com.kotcrab.kmips:kmips:1.6"
