@@ -1,6 +1,11 @@
 #### Version: 1.7
 
+- Fixed label couldn't be placed at very high address
+- Added function to create and place label (useful if label doesn't need to be accessed before the declaration address)
+- Updated to Kotlin 1.9.24
+
 #### Version: 1.6
+
 - Updated to Kotlin 1.6.10
 
 #### Version: 1.5

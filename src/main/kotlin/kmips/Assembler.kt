@@ -363,6 +363,12 @@ class Assembler(startPc: Int, val endianness: Endianness) {
 
   fun data(data: Int) = emit(DataPseudoInstruction(data))
 
+  fun label(): Label {
+    val label = Label()
+    label.address = virtualPc
+    return label
+  }
+
   fun label(label: Label) {
     label.address = virtualPc
   }
@@ -423,7 +429,6 @@ class Label {
       return field
     }
     set(value) {
-      if (value < 0) error("value can't be < 0")
       if (field != -1) error("label was already assigned")
       field = value
     }

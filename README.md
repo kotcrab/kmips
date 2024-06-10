@@ -8,7 +8,7 @@ executables. It was successfully used in few fan translations and game modding p
 kmips is available from the Maven Central repository:
 
 ```groovy
-implementation "com.kotcrab.kmips:kmips:1.6"
+implementation "com.kotcrab.kmips:kmips:1.7"
 ```
 
 ##### Example code

@@ -488,6 +488,18 @@ class AssemblerTest {
   }
 
   @Test
+  fun testLabel() {
+    val result = assemble(0x8896D6E4.toInt()) {
+      add(a0, a0, a0)
+      val label = label()
+      add(s0, s0, s0)
+      beq(a0, a0, label)
+      nop()
+    }.joinToString(separator = " ") { it.toHex() }
+    assertEquals("20208400 20801002 FEFF8410 00000000", result)
+  }
+
+  @Test
   fun testAssembleHelper() {
     val result = assemble(endianness = Endianness.Big) {
       sw(s0, 0xCD, a0)
