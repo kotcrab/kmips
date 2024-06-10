@@ -1,3 +1,5 @@
+#### Version: 1.8
+
 #### Version: 1.7
 
 - Fixed label couldn't be placed at very high address
